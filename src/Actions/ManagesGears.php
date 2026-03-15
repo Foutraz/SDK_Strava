@@ -12,6 +12,7 @@ use Foutraz\Strava\Concerns\MakesHttpRequests;
 
 class ManagesGears extends StravaManager
 {
+    //TODO use Dto in actions
     /**
      * @throws ResourceNotFound
      * @throws ActionFailed

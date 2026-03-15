@@ -16,8 +16,8 @@ class ManagesAuthentication extends StravaManager
     public function authorizeUrl(array $scopes = ['activity:read']): string
     {
         return 'https://www.strava.com/oauth/authorize?' . http_build_query([
-                'client_id' => config('strava.client_id'),
-                'redirect_uri' => config('strava.redirect_uri'),
+                'client_id' => $this->clientId,
+                'redirect_uri' => $this->redirectUri,
                 'response_type' => 'code',
                 'approval_prompt' => 'auto',
                 'scope' => implode(',', $scopes),
@@ -34,8 +34,8 @@ class ManagesAuthentication extends StravaManager
     public function exchangeToken(string $code)
     {
         return $this->post('https://www.strava.com/oauth/token', [
-            'client_id' => config('strava.client_id'),
-            'client_secret' => config('strava.client_secret'),
+            'client_id' => $this->clientId,
+            'client_secret' => $this->clientSecret,
             'code' => $code,
             'grant_type' => 'authorization_code',
         ]);
@@ -51,8 +51,8 @@ class ManagesAuthentication extends StravaManager
     public function refreshToken(string $refreshToken)
     {
         return $this->post('https://www.strava.com/oauth/token', [
-            'client_id' => config('strava.client_id'),
-            'client_secret' => config('strava.client_secret'),
+            'client_id' => $this->clientId,
+            'client_secret' => $this->clientSecret,
             'grant_type' => 'refresh_token',
             'refresh_token' => $refreshToken,
         ]);

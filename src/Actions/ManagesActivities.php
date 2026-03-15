@@ -11,6 +11,7 @@ use GuzzleHttp\Exception\GuzzleException;
 
 class ManagesActivities extends StravaManager
 {
+    //TODO use Dto in actions
     /**
      * @throws ResourceNotFound
      * @throws GuzzleException
@@ -81,5 +82,30 @@ class ManagesActivities extends StravaManager
     public function kudos(int $activityId)
     {
         return $this->get("/activities/$activityId/kudos");
+    }
+
+    /**
+     * @throws ResourceNotFound
+     * @throws ActionFailed
+     * @throws GuzzleException
+     * @throws InvalidData
+     * @throws Unauthorized
+     */
+    public function all(): array
+    {
+        $page = 1;
+        $activities = [];
+
+        do {
+
+            $results = $this->get('/athlete/activities');
+
+            $activities = array_merge($activities, $results);
+
+            $page++;
+
+        } while (count($results) === 200);
+
+        return $activities;
     }
 }

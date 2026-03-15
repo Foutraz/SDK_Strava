@@ -12,8 +12,7 @@ use GuzzleHttp\Exception\GuzzleException;
 
 class ManagesAthletes extends StravaManager
 {
-    use MakesHttpRequests;
-
+    //TODO use Dto in actions
     /**
      * @throws ActionFailed
      * @throws GuzzleException
