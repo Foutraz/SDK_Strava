@@ -1,0 +1,30 @@
+{
+  "name": "foutraz/strava",
+  "type": "library",
+  "description": "Strava SDK for PHP / Laravel",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Quentin MARI",
+      "email": "quentin.mari0409@gmail.com",
+      "role": "Developer"
+    }
+  ],
+  "require": {
+    "php": "^8.2",
+    "guzzlehttp/guzzle": "^7.0",
+    "illuminate/support": "^10.0|^11.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "Foutraz\\Strava\\": "src/"
+    }
+  },
+  "extra": {
+    "laravel": {
+      "providers": [
+        "Foutraz\\Strava\\Providers\\StravaServiceProvider"
+      ]
+    }
+  }
+}
