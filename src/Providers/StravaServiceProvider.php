@@ -15,27 +15,33 @@ class StravaServiceProvider extends ServiceProvider
             'strava'
         );
 
-        $this->app->singleton(StravaManager::class, function () {
-            if (blank(config('strava.token'))) {
-                throw new RuntimeException(
-                    'No Strava API token was provided. Please provide an API token in the `strava.token` config key.'
-                );
-            }
+        $this->app->singleton(StravaManager::class, function ($app) {
 
-            if (blank(config('strava.endpoint'))) {
+            $config = $app['config']['strava'];
+
+            if (blank($config['endpoint'])) {
                 throw new RuntimeException(
-                    'No Strava API endpoint was provided. Please provide an endpoint in the `strava.endpoint` config key.'
+                    'No Strava API endpoint was provided.'
                 );
             }
 
             return new StravaManager(
-                config('strava.endpoint'),
-                config('strava.token'),
+                $config['endpoint'],
+                $config['token'],
+                $config['client_id'],
+                $config['client_secret'],
+                $config['redirect_uri'],
             );
         });
 
-        $this->app->singleton('strava', function ($app) {
-            return $app->make(StravaManager::class);
-        });
+        $this->app->alias(StravaManager::class, 'strava');
+    }
+
+    public function boot(): void
+    {
+        $this->publishes([
+            dirname(__DIR__, 2).'/config/strava.php' =>
+                $this->app->configPath('strava.php'),
+        ], 'strava-config');
     }
 }
