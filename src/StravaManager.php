@@ -2,6 +2,7 @@
 
 namespace Foutraz\Strava;
 
+use Foutraz\Strava\Actions\ManagesAuthentication;
 use GuzzleHttp\Client;
 use GuzzleHttp\ClientInterface;
 use Foutraz\Strava\Actions\ManagesActivities;
@@ -27,6 +28,11 @@ class StravaManager
                 'Authorization' => 'Bearer '.$this->apiToken,
             ],
         ]);
+    }
+
+    public function auth(): ManagesAuthentication
+    {
+        return new ManagesAuthentication($this->endpoint, $this->apiToken, $this->client);
     }
 
     public function activities(): ManagesActivities
