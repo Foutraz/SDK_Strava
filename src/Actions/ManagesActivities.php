@@ -2,110 +2,97 @@
 
 namespace Foutraz\Strava\Actions;
 
+use Foutraz\Strava\Dto\Activity;
+use Foutraz\Strava\Dto\ActivityStream;
 use Foutraz\Strava\Exceptions\ActionFailed;
 use Foutraz\Strava\Exceptions\InvalidData;
 use Foutraz\Strava\Exceptions\ResourceNotFound;
+use Foutraz\Strava\Exceptions\TooManyRequestsException;
 use Foutraz\Strava\Exceptions\Unauthorized;
 use Foutraz\Strava\StravaManager;
+use Generator;
 use GuzzleHttp\Exception\GuzzleException;
 
 class ManagesActivities extends StravaManager
 {
-    //TODO use Dto in actions
     /**
-     * @throws ResourceNotFound
-     * @throws GuzzleException
+     * @param  array<string, mixed>  $params
+     * @return array<int, Activity>
+     *
      * @throws ActionFailed
+     * @throws GuzzleException
      * @throws InvalidData
+     * @throws ResourceNotFound
+     * @throws TooManyRequestsException
      * @throws Unauthorized
      */
-    public function list()
+    public function list(array $params = []): array
     {
-        return $this->get('/athlete/activities');
+        $response = $this->get('athlete/activities', $params);
+
+        return array_map(static fn (array $activity): Activity => Activity::fromArray($activity), $response);
     }
 
     /**
-     * @throws ResourceNotFound
-     * @throws GuzzleException
      * @throws ActionFailed
-     * @throws Unauthorized
+     * @throws GuzzleException
      * @throws InvalidData
+     * @throws ResourceNotFound
+     * @throws TooManyRequestsException
+     * @throws Unauthorized
      */
-    public function find(int $activityId)
+    public function find(int $activityId): Activity
     {
-        return $this->get("/activities/$activityId");
+        return Activity::fromArray($this->get("activities/$activityId"));
     }
 
     /**
-     * @throws ResourceNotFound
+     * @return array<int, ActivityStream>
+     *
      * @throws ActionFailed
      * @throws GuzzleException
      * @throws InvalidData
+     * @throws ResourceNotFound
+     * @throws TooManyRequestsException
      * @throws Unauthorized
      */
-    public function streams(int $activityId): mixed
+    public function streams(int $activityId): array
     {
-        return $this->get("/activities/$activityId/streams");
+        return ActivityStream::collectionFromArray($this->get("activities/$activityId/streams"));
     }
 
     /**
-     * @throws ResourceNotFound
+     * @return Generator<int, Activity>
+     *
      * @throws ActionFailed
      * @throws GuzzleException
      * @throws InvalidData
-     * @throws Unauthorized
-     */
-    public function laps(int $activityId)
-    {
-        return $this->get("/activities/$activityId/laps");
-    }
-
-    /**
      * @throws ResourceNotFound
-     * @throws ActionFailed
-     * @throws GuzzleException
-     * @throws InvalidData
+     * @throws TooManyRequestsException
      * @throws Unauthorized
      */
-    public function comments(int $activityId)
-    {
-        return $this->get("/activities/$activityId/comments");
-    }
-
-    /**
-     * @throws ResourceNotFound
-     * @throws GuzzleException
-     * @throws ActionFailed
-     * @throws InvalidData
-     * @throws Unauthorized
-     */
-    public function kudos(int $activityId)
-    {
-        return $this->get("/activities/$activityId/kudos");
-    }
-
-    /**
-     * @throws ResourceNotFound
-     * @throws ActionFailed
-     * @throws GuzzleException
-     * @throws InvalidData
-     * @throws Unauthorized
-     */
-    public function all(): array
+    public function iterate(int $perPage = 200, ?int $after = null): Generator
     {
         $page = 1;
-        $activities = [];
 
-        do {
+        while (true) {
+            $query = ['page' => $page, 'per_page' => $perPage];
 
-            $results = $this->get('/athlete/activities');
+            if ($after !== null) {
+                $query['after'] = $after;
+            }
 
-            $activities = array_merge($activities, $results);
+            $activities = $this->get('athlete/activities', $query);
+
+            foreach ($activities as $activity) {
+                yield Activity::fromArray($activity);
+            }
+
+            if (count($activities) < $perPage) {
+                break;
+            }
 
             $page++;
-
-        } while (count($results) === 200);
-
-        return $activities;
+        }
     }
 }
