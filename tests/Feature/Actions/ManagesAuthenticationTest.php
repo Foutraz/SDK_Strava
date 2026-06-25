@@ -30,6 +30,26 @@ class ManagesAuthenticationTest extends TestCase
     }
 
     #[Test]
+    public function it_defaults_the_approval_prompt_to_auto(): void
+    {
+        $manager = $this->managerWithResponses([]);
+
+        $url = $manager->auth()->authorizeUrl();
+
+        $this->assertStringContainsString('approval_prompt=auto', $url);
+    }
+
+    #[Test]
+    public function it_allows_forcing_the_approval_prompt(): void
+    {
+        $manager = $this->managerWithResponses([]);
+
+        $url = $manager->auth()->authorizeUrl(approvalPrompt: 'force');
+
+        $this->assertStringContainsString('approval_prompt=force', $url);
+    }
+
+    #[Test]
     public function it_exchanges_a_code_for_a_token_response(): void
     {
         $manager = $this->managerWithResponses([

@@ -16,13 +16,13 @@ class ManagesAuthentication extends StravaManager
     /**
      * @param  array<int, string>  $scopes
      */
-    public function authorizeUrl(array $scopes = ['read', 'activity:read_all']): string
+    public function authorizeUrl(array $scopes = ['read', 'activity:read_all'], string $approvalPrompt = 'auto'): string
     {
         return 'https://www.strava.com/oauth/authorize?'.http_build_query([
             'client_id' => $this->clientId,
             'redirect_uri' => $this->redirectUri,
             'response_type' => 'code',
-            'approval_prompt' => 'auto',
+            'approval_prompt' => $approvalPrompt,
             'scope' => implode(',', $scopes),
         ]);
     }
