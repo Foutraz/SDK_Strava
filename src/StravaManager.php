@@ -24,7 +24,7 @@ class StravaManager
     ) {
         $this->client ??= new Client([
             'http_errors' => false,
-            'base_uri' => $this->endpoint,
+            'base_uri' => rtrim($this->endpoint, '/').'/',
             'headers' => [
                 'Accept' => 'application/json',
                 'Authorization' => 'Bearer '.$this->apiToken,
@@ -58,7 +58,7 @@ class StravaManager
 
         $this->client = new Client([
             'http_errors' => false,
-            'base_uri' => $this->endpoint,
+            'base_uri' => rtrim($this->endpoint, '/').'/',
             'headers' => [
                 'Accept' => 'application/json',
                 'Authorization' => 'Bearer '.$token,

@@ -2,27 +2,29 @@
 
 namespace Foutraz\Strava\Actions;
 
-use Foutraz\Strava\Concerns\MakesHttpRequests;
+use Foutraz\Strava\Dto\Athlete;
+use Foutraz\Strava\Dto\AthleteStats;
 use Foutraz\Strava\Exceptions\ActionFailed;
 use Foutraz\Strava\Exceptions\InvalidData;
 use Foutraz\Strava\Exceptions\ResourceNotFound;
+use Foutraz\Strava\Exceptions\TooManyRequestsException;
 use Foutraz\Strava\Exceptions\Unauthorized;
 use Foutraz\Strava\StravaManager;
 use GuzzleHttp\Exception\GuzzleException;
 
 class ManagesAthletes extends StravaManager
 {
-    //TODO use Dto in actions
     /**
      * @throws ActionFailed
      * @throws GuzzleException
      * @throws InvalidData
      * @throws ResourceNotFound
+     * @throws TooManyRequestsException
      * @throws Unauthorized
      */
-    public function me(): mixed
+    public function me(): Athlete
     {
-        return $this->get('/athlete');
+        return Athlete::fromArray($this->get('athlete'));
     }
 
     /**
@@ -30,10 +32,11 @@ class ManagesAthletes extends StravaManager
      * @throws GuzzleException
      * @throws InvalidData
      * @throws ResourceNotFound
+     * @throws TooManyRequestsException
      * @throws Unauthorized
      */
-    public function stats(int $athleteId): mixed
+    public function stats(int $athleteId): AthleteStats
     {
-        return $this->get("/athletes/$athleteId/stats");
+        return AthleteStats::fromArray($this->get("athletes/$athleteId/stats"));
     }
 }

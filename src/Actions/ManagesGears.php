@@ -2,26 +2,27 @@
 
 namespace Foutraz\Strava\Actions;
 
+use Foutraz\Strava\Dto\Gear;
 use Foutraz\Strava\Exceptions\ActionFailed;
 use Foutraz\Strava\Exceptions\InvalidData;
 use Foutraz\Strava\Exceptions\ResourceNotFound;
+use Foutraz\Strava\Exceptions\TooManyRequestsException;
 use Foutraz\Strava\Exceptions\Unauthorized;
 use Foutraz\Strava\StravaManager;
 use GuzzleHttp\Exception\GuzzleException;
-use Foutraz\Strava\Concerns\MakesHttpRequests;
 
 class ManagesGears extends StravaManager
 {
-    //TODO use Dto in actions
     /**
-     * @throws ResourceNotFound
      * @throws ActionFailed
      * @throws GuzzleException
      * @throws InvalidData
+     * @throws ResourceNotFound
+     * @throws TooManyRequestsException
      * @throws Unauthorized
      */
-    public function find(string $gearId)
+    public function find(string $gearId): Gear
     {
-        return $this->get("/gear/$gearId");
+        return Gear::fromArray($this->get("gear/$gearId"));
     }
 }
