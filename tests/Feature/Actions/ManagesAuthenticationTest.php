@@ -17,6 +17,7 @@ class ManagesAuthenticationTest extends TestCase
 
         $this->assertStringContainsString('client_id=client-id', $url);
         $this->assertStringContainsString('scope=read%2Cactivity%3Aread_all', $url);
+        $this->assertStringContainsString('approval_prompt=auto', $url);
     }
 
     #[Test]
@@ -27,6 +28,16 @@ class ManagesAuthenticationTest extends TestCase
         $url = $manager->auth()->authorizeUrl(['profile:read_all']);
 
         $this->assertStringContainsString('scope=profile%3Aread_all', $url);
+    }
+
+    #[Test]
+    public function it_allows_forcing_the_approval_prompt(): void
+    {
+        $manager = $this->managerWithResponses([]);
+
+        $url = $manager->auth()->authorizeUrl(['read'], 'force');
+
+        $this->assertStringContainsString('approval_prompt=force', $url);
     }
 
     #[Test]
