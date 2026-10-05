@@ -108,6 +108,10 @@ foreach ($strava->activities()->iterate(perPage: 200, after: $sinceTimestamp) as
     $activity->movingTime;      // seconds
     $activity->startDate;       // DateTimeImmutable|null
     $activity->mapPolyline;     // ?string
+    $activity->isManual;        // ?bool, true when created by hand
+    $activity->isFlagged;       // ?bool
+    $activity->uploadId;        // ?int, set for uploaded files and device syncs
+    $activity->deviceName;      // ?string
 }
 ```
 
