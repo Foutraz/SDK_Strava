@@ -2,6 +2,7 @@
 
 namespace Foutraz\Strava\Tests\Unit\Dto;
 
+use DateTimeImmutable;
 use Foutraz\Strava\Dto\Activity;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
@@ -76,5 +77,155 @@ class ActivityTest extends TestCase
         $this->assertNull($activity->startLatlng);
         $this->assertNull($activity->endLatlng);
         $this->assertNull($activity->mapPolyline);
+    }
+
+    #[Test]
+    public function it_maps_the_provenance_fields_of_a_full_payload(): void
+    {
+        $activity = Activity::fromArray([
+            'id' => 123,
+            'name' => 'Morning Ride',
+            'type' => 'Ride',
+            'manual' => false,
+            'flagged' => false,
+            'trainer' => false,
+            'upload_id' => 12345678901,
+            'upload_id_str' => '12345678901',
+            'external_id' => 'garmin_push_9876543210',
+            'device_name' => 'Garmin Edge 830',
+        ]);
+
+        $this->assertFalse($activity->isManual);
+        $this->assertFalse($activity->isFlagged);
+        $this->assertFalse($activity->isTrainer);
+        $this->assertSame(12345678901, $activity->uploadId);
+        $this->assertSame('garmin_push_9876543210', $activity->externalId);
+        $this->assertSame('Garmin Edge 830', $activity->deviceName);
+    }
+
+    #[Test]
+    public function it_maps_a_manual_activity_without_upload(): void
+    {
+        $activity = Activity::fromArray([
+            'id' => 7,
+            'name' => 'Musculation',
+            'type' => 'Workout',
+            'manual' => true,
+            'upload_id' => null,
+            'external_id' => null,
+        ]);
+
+        $this->assertTrue($activity->isManual);
+        $this->assertNull($activity->uploadId);
+        $this->assertNull($activity->externalId);
+    }
+
+    #[Test]
+    public function it_maps_a_flagged_activity(): void
+    {
+        $activity = Activity::fromArray([
+            'id' => 8,
+            'name' => 'Flagged',
+            'type' => 'Run',
+            'flagged' => true,
+        ]);
+
+        $this->assertTrue($activity->isFlagged);
+    }
+
+    #[Test]
+    public function it_maps_a_trainer_activity(): void
+    {
+        $activity = Activity::fromArray([
+            'id' => 9,
+            'name' => 'Turbo',
+            'type' => 'Ride',
+            'trainer' => true,
+        ]);
+
+        $this->assertTrue($activity->isTrainer);
+    }
+
+    #[Test]
+    public function it_falls_back_to_the_string_upload_id(): void
+    {
+        $activity = Activity::fromArray([
+            'id' => 10,
+            'name' => 'Uploaded',
+            'type' => 'Run',
+            'upload_id_str' => '98765432109876',
+        ]);
+
+        $this->assertSame(98765432109876, $activity->uploadId);
+    }
+
+    #[Test]
+    public function it_prefers_the_numeric_upload_id_over_the_string_one(): void
+    {
+        $activity = Activity::fromArray([
+            'id' => 11,
+            'name' => 'Uploaded',
+            'type' => 'Run',
+            'upload_id' => 555,
+            'upload_id_str' => '999',
+        ]);
+
+        $this->assertSame(555, $activity->uploadId);
+    }
+
+    #[Test]
+    public function it_defaults_the_provenance_fields_to_null(): void
+    {
+        $activity = Activity::fromArray([
+            'id' => 1,
+            'name' => 'Ride',
+            'distance' => 100.0,
+            'moving_time' => 60,
+            'elapsed_time' => 70,
+            'total_elevation_gain' => 0.0,
+            'type' => 'Ride',
+        ]);
+
+        $this->assertNull($activity->isManual);
+        $this->assertNull($activity->isFlagged);
+        $this->assertNull($activity->isTrainer);
+        $this->assertNull($activity->uploadId);
+        $this->assertNull($activity->externalId);
+        $this->assertNull($activity->deviceName);
+    }
+
+    #[Test]
+    public function it_keeps_the_positional_constructor_backward_compatible(): void
+    {
+        $activity = new Activity(
+            123,
+            'Morning Run',
+            5000.5,
+            1800,
+            1900,
+            42.0,
+            'Run',
+            'TrailRun',
+            new DateTimeImmutable('2024-01-02T08:00:00Z'),
+            new DateTimeImmutable('2024-01-02T09:00:00Z'),
+            2.78,
+            4.1,
+            150.0,
+            175.0,
+            320.5,
+            'g123',
+            [48.85, 2.35],
+            [48.86, 2.36],
+            'abc123',
+        );
+
+        $this->assertSame(123, $activity->id);
+        $this->assertSame('abc123', $activity->mapPolyline);
+        $this->assertNull($activity->isManual);
+        $this->assertNull($activity->isFlagged);
+        $this->assertNull($activity->isTrainer);
+        $this->assertNull($activity->uploadId);
+        $this->assertNull($activity->externalId);
+        $this->assertNull($activity->deviceName);
     }
 }
