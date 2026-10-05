@@ -57,6 +57,78 @@ class ActivityTest extends TestCase
     }
 
     #[Test]
+    public function it_maps_a_realistic_strava_payload_to_every_property(): void
+    {
+        $activity = Activity::fromArray([
+            'resource_state' => 2,
+            'athlete' => ['id' => 134815, 'resource_state' => 1],
+            'name' => 'Happy Friday',
+            'distance' => 24931.4,
+            'moving_time' => 4500,
+            'elapsed_time' => 4500,
+            'total_elevation_gain' => 516.0,
+            'type' => 'Ride',
+            'sport_type' => 'MountainBikeRide',
+            'workout_type' => null,
+            'id' => 154504250376823,
+            'external_id' => 'garmin_push_12345678987654321',
+            'upload_id' => 987654321234567891,
+            'upload_id_str' => '987654321234567891',
+            'start_date' => '2018-05-02T12:15:09Z',
+            'start_date_local' => '2018-05-02T05:15:09Z',
+            'timezone' => '(GMT-08:00) America/Los_Angeles',
+            'utc_offset' => -25200.0,
+            'start_latlng' => [37.83, -122.26],
+            'end_latlng' => [37.83, -122.26],
+            'achievement_count' => 0,
+            'kudos_count' => 3,
+            'comment_count' => 1,
+            'athlete_count' => 1,
+            'photo_count' => 0,
+            'map' => ['id' => 'a12345678987654321', 'summary_polyline' => 'abc123', 'resource_state' => 2],
+            'trainer' => true,
+            'commute' => false,
+            'manual' => false,
+            'private' => false,
+            'flagged' => true,
+            'gear_id' => 'b12345678987654321',
+            'average_speed' => 5.54,
+            'max_speed' => 11.0,
+            'average_heartrate' => 140.3,
+            'max_heartrate' => 178.0,
+            'kilojoules' => 890.4,
+            'device_name' => 'Garmin Edge 1030',
+        ]);
+
+        $this->assertSame(154504250376823, $activity->id);
+        $this->assertSame('Happy Friday', $activity->name);
+        $this->assertSame(24931.4, $activity->distance);
+        $this->assertSame(4500, $activity->movingTime);
+        $this->assertSame(4500, $activity->elapsedTime);
+        $this->assertSame(516.0, $activity->totalElevationGain);
+        $this->assertSame('Ride', $activity->type);
+        $this->assertSame('MountainBikeRide', $activity->sportType);
+        $this->assertSame('2018-05-02T12:15:09+00:00', $activity->startDate?->format('c'));
+        $this->assertSame('2018-05-02T05:15:09+00:00', $activity->startDateLocal?->format('c'));
+        $this->assertSame(5.54, $activity->averageSpeed);
+        $this->assertSame(11.0, $activity->maxSpeed);
+        $this->assertSame(140.3, $activity->averageHeartrate);
+        $this->assertSame(178.0, $activity->maxHeartrate);
+        $this->assertSame(890.4, $activity->kilojoules);
+        $this->assertSame('b12345678987654321', $activity->gearId);
+        $this->assertSame([37.83, -122.26], $activity->startLatlng);
+        $this->assertSame([37.83, -122.26], $activity->endLatlng);
+        $this->assertSame('abc123', $activity->mapPolyline);
+        $this->assertFalse($activity->isManual);
+        $this->assertTrue($activity->isFlagged);
+        $this->assertTrue($activity->isTrainer);
+        $this->assertSame(987654321234567891, $activity->uploadId);
+        $this->assertSame('garmin_push_12345678987654321', $activity->externalId);
+        $this->assertSame('Garmin Edge 1030', $activity->deviceName);
+        $this->assertCount(25, get_object_vars($activity));
+    }
+
+    #[Test]
     public function it_defaults_nullable_fields_to_null(): void
     {
         $activity = Activity::fromArray([
