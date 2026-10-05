@@ -108,8 +108,14 @@ foreach ($strava->activities()->iterate(perPage: 200, after: $sinceTimestamp) as
     $activity->movingTime;      // seconds
     $activity->startDate;       // DateTimeImmutable|null
     $activity->mapPolyline;     // ?string
+    $activity->isManual;        // ?bool, true when created by hand
+    $activity->isFlagged;       // ?bool
+    $activity->uploadId;        // ?int, set for uploaded files and device syncs
+    $activity->deviceName;      // ?string, may be null on list() and iterate()
 }
 ```
+
+`deviceName` comes from Strava's detailed activity representation: it may be `null` on `list()` and `iterate()` results and is populated by `find()` when the activity has a device, which is also the safer source for any other detailed-only field. `uploadId` is `null` unless it is a positive integer that fits in 64 bits.
 
 ## Athletes & gear
 

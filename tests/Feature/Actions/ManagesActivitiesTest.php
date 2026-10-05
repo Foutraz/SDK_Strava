@@ -80,4 +80,20 @@ class ManagesActivitiesTest extends TestCase
         $this->assertCount(1, $activities);
         $this->assertStringContainsString('after=1600000000', $this->lastRequestUri());
     }
+
+    #[Test]
+    public function it_exposes_the_provenance_of_listed_activities(): void
+    {
+        $manager = $this->managerWithResponses([
+            $this->jsonResponse(200, [
+                ['id' => 1, 'name' => 'A', 'type' => 'Run', 'manual' => true],
+                ['id' => 2, 'name' => 'B', 'type' => 'Ride', 'manual' => false, 'upload_id' => 555],
+            ]),
+        ]);
+
+        $activities = $manager->activities()->list();
+
+        $this->assertTrue($activities[0]->isManual);
+        $this->assertSame(555, $activities[1]->uploadId);
+    }
 }

@@ -30,6 +30,12 @@ class Activity
         public ?array $startLatlng,
         public ?array $endLatlng,
         public ?string $mapPolyline,
+        public ?bool $isManual = null,
+        public ?bool $isFlagged = null,
+        public ?bool $isTrainer = null,
+        public ?int $uploadId = null,
+        public ?string $externalId = null,
+        public ?string $deviceName = null,
     ) {}
 
     /**
@@ -57,6 +63,43 @@ class Activity
             $data['start_latlng'] ?? null,
             $data['end_latlng'] ?? null,
             $data['map']['summary_polyline'] ?? null,
+            isset($data['manual']) ? (bool) $data['manual'] : null,
+            isset($data['flagged']) ? (bool) $data['flagged'] : null,
+            isset($data['trainer']) ? (bool) $data['trainer'] : null,
+            self::uploadIdFrom($data),
+            isset($data['external_id']) ? (string) $data['external_id'] : null,
+            isset($data['device_name']) ? (string) $data['device_name'] : null,
         );
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     */
+    private static function uploadIdFrom(array $data): ?int
+    {
+        foreach ([$data['upload_id'] ?? null, $data['upload_id_str'] ?? null] as $candidate) {
+            $uploadId = self::positiveInt($candidate);
+
+            if ($uploadId !== null) {
+                return $uploadId;
+            }
+        }
+
+        return null;
+    }
+
+    private static function positiveInt(mixed $candidate): ?int
+    {
+        if (is_int($candidate)) {
+            return $candidate > 0 ? $candidate : null;
+        }
+
+        if (! is_string($candidate) || ! ctype_digit($candidate)) {
+            return null;
+        }
+
+        $integer = (int) $candidate;
+
+        return $integer > 0 && (string) $integer === ltrim($candidate, '0') ? $integer : null;
     }
 }
