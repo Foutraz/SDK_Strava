@@ -4,6 +4,7 @@ namespace Foutraz\Strava\Tests\Unit\Dto;
 
 use DateTimeImmutable;
 use Foutraz\Strava\Dto\Activity;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -171,6 +172,106 @@ class ActivityTest extends TestCase
         ]);
 
         $this->assertSame(555, $activity->uploadId);
+    }
+
+    #[Test]
+    public function it_falls_back_to_the_string_upload_id_when_the_numeric_one_is_null(): void
+    {
+        $activity = Activity::fromArray([
+            'id' => 12,
+            'name' => 'Uploaded',
+            'type' => 'Run',
+            'upload_id' => null,
+            'upload_id_str' => '98765432123456789',
+        ]);
+
+        $this->assertSame(98765432123456789, $activity->uploadId);
+    }
+
+    #[Test]
+    public function it_maps_an_upload_id_overflowing_int64_to_null(): void
+    {
+        $activity = Activity::fromArray([
+            'id' => 13,
+            'name' => 'Uploaded',
+            'type' => 'Run',
+            'upload_id' => 987654321234567891234,
+            'upload_id_str' => '987654321234567891234',
+        ]);
+
+        $this->assertNull($activity->uploadId);
+    }
+
+    #[Test]
+    public function it_maps_an_empty_string_upload_id_to_null(): void
+    {
+        $activity = Activity::fromArray([
+            'id' => 14,
+            'name' => 'Uploaded',
+            'type' => 'Run',
+            'upload_id_str' => '',
+        ]);
+
+        $this->assertNull($activity->uploadId);
+    }
+
+    #[Test]
+    public function it_falls_back_to_a_valid_string_when_the_numeric_upload_id_overflows(): void
+    {
+        $activity = Activity::fromArray([
+            'id' => 15,
+            'name' => 'Uploaded',
+            'type' => 'Run',
+            'upload_id' => 1.0e20,
+            'upload_id_str' => '555',
+        ]);
+
+        $this->assertSame(555, $activity->uploadId);
+    }
+
+    #[Test]
+    #[DataProvider('invalidUploadIds')]
+    public function it_maps_an_invalid_upload_id_to_null(mixed $uploadId): void
+    {
+        $activity = Activity::fromArray([
+            'id' => 16,
+            'name' => 'Uploaded',
+            'type' => 'Run',
+            'upload_id' => $uploadId,
+        ]);
+
+        $this->assertNull($activity->uploadId);
+    }
+
+    /**
+     * @return array<string, array<int, mixed>>
+     */
+    public static function invalidUploadIds(): array
+    {
+        return [
+            'zero' => [0],
+            'negative integer' => [-5],
+            'zero string' => ['0'],
+            'negative string' => ['-5'],
+            'non numeric string' => ['12abc'],
+            'string above int64' => ['9223372036854775808'],
+            'float' => [1.5],
+            'boolean' => [true],
+            'array' => [[1]],
+        ];
+    }
+
+    #[Test]
+    public function it_accepts_the_largest_int64_string_upload_id(): void
+    {
+        $activity = Activity::fromArray([
+            'id' => 17,
+            'name' => 'Uploaded',
+            'type' => 'Run',
+            'upload_id_str' => '9223372036854775807',
+        ]);
+
+        $this->assertSame(PHP_INT_MAX, $activity->uploadId);
     }
 
     #[Test]

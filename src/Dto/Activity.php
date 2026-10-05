@@ -77,8 +77,29 @@ class Activity
      */
     private static function uploadIdFrom(array $data): ?int
     {
-        $uploadId = $data['upload_id'] ?? $data['upload_id_str'] ?? null;
+        foreach ([$data['upload_id'] ?? null, $data['upload_id_str'] ?? null] as $candidate) {
+            $uploadId = self::positiveInt($candidate);
 
-        return $uploadId === null ? null : (int) $uploadId;
+            if ($uploadId !== null) {
+                return $uploadId;
+            }
+        }
+
+        return null;
+    }
+
+    private static function positiveInt(mixed $candidate): ?int
+    {
+        if (is_int($candidate)) {
+            return $candidate > 0 ? $candidate : null;
+        }
+
+        if (! is_string($candidate) || ! ctype_digit($candidate)) {
+            return null;
+        }
+
+        $integer = (int) $candidate;
+
+        return $integer > 0 && (string) $integer === ltrim($candidate, '0') ? $integer : null;
     }
 }
